@@ -16,7 +16,7 @@ source venv/bin/activate
 ```
 That will hep to create and active Python virtual environment.
 
-When you still in the virtual environment, then install the libraries we will need to use for batch process:
+When you still in the virtual environment, then install the libraries we will need for batch process:
 ```
 pip install -r requirements.txt 
 ```

@@ -7,11 +7,11 @@ import asyncio
 from bs4 import BeautifulSoup
 from klangooclient.MagnetAPIClient import MagnetAPIClient
 from clavisphilly.Contentv4API import Contentv4API
-from helper import print_progress_bar, hms, join_csv_files, remove_output_files, get_list
+from helper import print_progress_bar, hms, join_csv_files, remove_output_files, get_list, bcolors
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor
 
-load_dotenv("_config.env") 
+load_dotenv("_config.env") # Load env file
 
 ARC_TOKEN = os.getenv("ARC_TOKEN")
 ARC_DOMAIN = os.getenv("ARC_DOMAIN")
@@ -22,9 +22,9 @@ SLEEPING_TIME = int(os.getenv("SLEEPING_TIME"))
 SIZE = int(os.getenv("SIZE"))
 
 clavis_client = Contentv4API(ARC_TOKEN,ARC_DOMAIN)
-
 klangoo_client = MagnetAPIClient(KLANGOO_ENDPOINT, KLANGOO_CALK, KLANGOO_SECRET_KEY)
 
+# Write string to CSV file
 def convert_string_to_csv(file_name, dict_data, headers):
     file_exists = os.path.isfile(file_name)
     with open (file_name, 'a') as csvfile:
@@ -45,13 +45,15 @@ def main_handle(article_ids):
         loop.run_until_complete(future)
     return
     
+# Get Clavis topics
 def clavis_process(response, article_ids):
     try:
-        # Clavis headers 
+        # Clavis headers csv file
         headers = ['id', 'website_url', 'headline', 'clavis_topics']
         for content_element in response['content_elements']:
             dict_data = {}
             string_topics = ""
+
             try:
                 for topic in content_element['taxonomy']['topics']:
                     string_topics += ("|" if len(string_topics) > 0 else "") + topic['name']
@@ -127,6 +129,7 @@ async def klangoo_process(response):
         print(error)
         return
 
+# Collect article content element
 def klangoo_handle_article_body(data):
     arc_contents = ""
     contents = data.get('content_elements')
@@ -143,6 +146,7 @@ def klangoo_handle_article_body(data):
             print(error)
             return None
 
+# Get Klangoo topics
 def klangoo_topic(article_body, article_id, headers):
     if article_body is not None and len(article_body) > 10:
         request = { 
@@ -168,9 +172,8 @@ def klangoo_topic(article_body, article_id, headers):
             if result is not None:
                 convert_string_to_csv("_output/klangoo_topics.csv", result, headers)
         else:
-            # print('Error: \n', response)
             pass
-
+# Gather topics
 def klangoo_parse_data(response, article_id):
     try:
         dict_data = {}
@@ -194,16 +197,17 @@ def klangoo_parse_data(response, article_id):
 def handle_input():
     file_names = get_list()
     path = "_input/"
+
     for file in file_names:
-        remove_output_files()
         file_name = path + file
 
         data = pd.read_csv(file_name) 
         total_rows = int(data.shape[0])
-        print("Number of IDs: ", total_rows)
 
         if 'csv' in file:
-            print('Handling the csv file named: ', file)
+            print(bcolors.UNDERLINE + bcolors.BOLD + bcolors.OKGREEN + 'Handling the csv file named: {}'.format(file)+ bcolors.ENDC)
+            remove_output_files()
+            print("Number of IDs: ", total_rows)
             count = 0
             array_data = []
             processed_total = 0
@@ -224,9 +228,12 @@ def handle_input():
                     else:
                         if processed_total == total_rows:
                             main_handle(array_data)
+                            array_data = []
+
                     print_progress_bar(processed_total, total_rows, prefix = 'Progress:', suffix = 'Complete', length = 50)
+            
             print("Going to join Clavis and Klangoo csv files!")
-            join_csv_files()
+            join_csv_files(file)
             f.close()
 
 if __name__ == "__main__":
@@ -234,4 +241,4 @@ if __name__ == "__main__":
     handle_input()
     total_time = hms(int(str(time.time()-start).split('.')[0]))
     print("The process took {}!".format(total_time))
-    print("DONE ^^!")
+    print(bcolors.OKBLUE + "DONE ^^!" + bcolors.ENDC)

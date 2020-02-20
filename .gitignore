@@ -6,3 +6,4 @@ sample_config.env
 /klangooclient/__pycache__
 /result
 /.vscode
+test.py

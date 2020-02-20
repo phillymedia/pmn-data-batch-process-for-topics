@@ -30,8 +30,8 @@ ARC_TOKEN = The token for Arc authentication.
 KLANGOO_SECRET_KEY = The Klangoo key for Klangoo authentication.
 KLANGOO_CALK = The api key for Klangoo authentication.
 KLANGOO_ENDPOINT = "https://magnetapi.klangoo.com/Service.svc"
-SIZE = The number of posts will be processed at a time. It should be 0 < SIZE <= 40.
-SLEEPING_TIME = Keeps the process slow down to avoid overload the Arc Server. It should be 2 <= SIZE <= 5.
+SIZE = The number of posts will be processed at a time. It should be 0 < SIZE <= 40. (My suggestion is 30)
+SLEEPING_TIME = Keeps the process slow down to avoid overload the Arc Server. It should be 2 <= SIZE <= 6. (If you run the process at peak time, the SIZE should be 6)
 ```
 
 ### `Run the process`

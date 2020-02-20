@@ -22,16 +22,20 @@ def print_progress_bar (iteration, total, prefix = '', suffix = '', decimals = 1
 
 # Join Klangoo and Clavis CSV files => The output is the CSV file that has both Klangoo and Clavis topics
 def join_csv_files(file):
-    file_name = "OUTPUT_Article_Topics_IDs_" + str(time.time())[:10] + ".csv"
+    if os.path.isfile('_output/clavis_topics.csv') and os.path.isfile('_output/klangoo_topics.csv'):
+        file_name = "OUTPUT_Article_Topics_IDs_" + str(time.time())[:10] + ".csv"
 
-    df1 = pd.read_csv("_output/clavis_topics.csv")
-    df2 = pd.read_csv("_output/klangoo_topics.csv")
+        df1 = pd.read_csv("_output/clavis_topics.csv")
+        df2 = pd.read_csv("_output/klangoo_topics.csv")
 
-    df3 = df1.merge(df2, on=["id"], how='outer')
-    df3.to_csv("_output/{}".format(file_name),index=False)
+        df3 = df1.merge(df2, on=["id"], how='outer')
+        df3.to_csv("_output/{}".format(file_name),index=False)
 
-    print( bcolors.OKGREEN + 'Finished {}'.format(file) + bcolors.ENDC)
-    print(bcolors.OKGREEN + "***************************" + bcolors.ENDC)
+        print( bcolors.OKGREEN + 'Finished {}'.format(file) + bcolors.ENDC)
+        print(bcolors.OKGREEN + "***************************" + bcolors.ENDC)
+    else:
+        print(bcolors.FAIL + "Article IDs is not correct, please re-check the input files again!" + bcolors.ENDC)
+        print(bcolors.FAIL + "There is no output from the process!" + bcolors.ENDC)
 
 # Get files in _input
 def get_list():

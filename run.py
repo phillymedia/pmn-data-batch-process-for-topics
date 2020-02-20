@@ -208,33 +208,37 @@ def handle_input():
             print(bcolors.UNDERLINE + bcolors.BOLD + bcolors.OKGREEN + 'Handling the csv file named: {}'.format(file)+ bcolors.ENDC)
             remove_output_files()
             print("Number of IDs: ", total_rows)
-            count = 0
-            array_data = []
-            processed_total = 0
-            f = open(file_name)
-            csv_data = csv.reader(f)
-            next(csv_data)
-            for element in csv_data:
-                if len(element[0]) > 1:        
-                    array_data.append(element[0])
-                    count -= -1
-                    processed_total += 1
+            if total_rows > 1:
+                count = 0
+                array_data = []
+                processed_total = 0
+                f = open(file_name)
+                csv_data = csv.reader(f)
+                next(csv_data)
+                for element in csv_data:
+                    if len(element[0]) > 1:        
+                        array_data.append(element[0])
+                        count -= -1
+                        processed_total += 1
 
-                    if count >= SIZE:
-                        main_handle(array_data)
-                        count = 0
-                        array_data = []
-                        time.sleep(SLEEPING_TIME)
-                    else:
-                        if processed_total == total_rows:
+                        if count >= SIZE:
                             main_handle(array_data)
+                            count = 0
                             array_data = []
+                            time.sleep(SLEEPING_TIME)
+                        else:
+                            if processed_total == total_rows:
+                                main_handle(array_data)
+                                array_data = []
 
-                    print_progress_bar(processed_total, total_rows, prefix = 'Progress:', suffix = 'Complete', length = 50)
-            
-            print("Going to join Clavis and Klangoo csv files!")
-            join_csv_files(file)
-            f.close()
+                        print_progress_bar(processed_total, total_rows, prefix = 'Progress:', suffix = 'Complete', length = 50)
+                
+                print("Going to join Clavis and Klangoo csv files!")
+                join_csv_files(file)
+                f.close()
+
+            else:
+                print(bcolors.FAIL + "The {} file is containing invalid or empty data.".format(file) + bcolors.ENDC)
 
 if __name__ == "__main__":
     start = time.time()

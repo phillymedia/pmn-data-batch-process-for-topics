@@ -101,7 +101,7 @@ async def klangoo_process(response):
     input_requests = []
     try:
         # Klangoo headers
-        headers = ['id', 'klangoo_topics']
+        headers = ['id', 'klangoo_topics', 'categories', 'specific_categories']
         for content_element in response['content_elements']:
             article_id = content_element["_id"]
             dict_data = {}
@@ -159,32 +159,50 @@ def klangoo_topic(article_body, article_id, headers):
         response_json = None
 
         while status is None and number_of_tries < 3:   
-            response = klangoo_client.callwebmethod('GetKeyTopics', request, 'POST')
-            response_json = json.loads(response.decode("utf-8"))
-            if response_json['status'] == 'OK':
+            klangoo_response = klangoo_client.callwebmethod('GetKeyTopics', request, 'POST')
+            klangoo_response_json = json.loads(klangoo_response.decode("utf-8"))
+            if klangoo_response_json['status'] == 'OK':
                 status = "OK"
             else:
                 time.sleep(SLEEPING_TIME)
                 number_of_tries += 1
-            
-        if response_json['status'] == 'OK':
-            result = klangoo_parse_data(response_json, article_id)
+
+        if status == 'OK':
+            categories_response = klangoo_client.callwebmethod('GetCategories', request, 'POST')
+            categories_response_json = json.loads(categories_response.decode("utf-8"))
+
+            result = klangoo_parse_data(klangoo_response_json, article_id, categories_response_json)
+
             if result is not None:
                 convert_string_to_csv("_output/klangoo_topics.csv", result, headers)
         else:
             pass
 # Gather topics
-def klangoo_parse_data(response, article_id):
+def klangoo_parse_data(klangoo_response, article_id, categories_json):
     try:
         dict_data = {}
         string_topics = ""
+        categories = ""
+        specific_categories = ""
 
-        for topic in response['keyTopics']:
+        for topic in klangoo_response['keyTopics']:
             string_topics += ("|" if len(string_topics) > 0 else "") + topic['text']
+
+        if categories_json is not None:
+            for category in categories_json['categories']:
+                categories += ("|" if len(categories) > 0 else "") + category['name']
+                
+                try:
+                    for spe in category['specificCategories']:
+                        specific_categories += ("|" if len(specific_categories) > 0 else "") + spe['name']
+                except:
+                    pass
 
         dict_data.update({
             "id": article_id,
-            "klangoo_topics": string_topics
+            "klangoo_topics": string_topics,
+            "categories": categories,
+            "specific_categories": specific_categories
         })
 
         return dict_data
